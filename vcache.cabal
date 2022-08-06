@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name: vcache
-version: 0.2.6
+version: 0.2.7
 synopsis: semi-transparent persistence for Haskell using LMDB, STM
 category: Database
 description:
@@ -19,7 +19,7 @@ maintainer: dmbarbour@gmail.com
 homepage: http://github.com/dmbarbour/haskell-vcache
 
 copyright: (c) 2014-2015 by David Barbour
-license: BSD3
+license: BSD-3-Clause
 license-file: LICENSE
 stability: experimental
 build-type: Simple

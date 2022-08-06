@@ -28,10 +28,10 @@
                 };
                 vcache = pkgs.mkDerivation {
                   pname = "vcache";
-                  version = "0.2.6";
+                  version = "0.2.7";
                   src = ./.;
-                  isExecutable = true;
-                  executableHaskellDepends = with pkgs; [
+                  isLibrary = true;
+                  libraryHaskellDepends = with pkgs; [
                     direct-murmur-hash
                     bytestring
                     transformers
@@ -62,7 +62,6 @@
           let binaryToApp = bin: { type = "app"; program = "${bin}/bin/${bin.pname}"; };
            in
           {
-            default = binaryToApp thisNative.vcache;
             ghci = {
               type = "app";
               program = thisNative.ghci.outPath;
