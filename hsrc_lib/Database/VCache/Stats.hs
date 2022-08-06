@@ -31,7 +31,7 @@ data VCacheStats = VCacheStats
         , vcstat_write_pvars    :: {-# UNPACK #-} !Int  -- ^ number of PVar updates to disk (after batching)
         , vcstat_write_sync     :: {-# UNPACK #-} !Int  -- ^ number of sync requests (~ durable transactions)
         , vcstat_write_frames   :: {-# UNPACK #-} !Int  -- ^ number of LMDB-layer transactions by this process
-        } deriving (Show, Ord, Eq)
+        } deriving stock (Show, Ord, Eq)
 
 -- | Compute some miscellaneous statistics for a VCache instance at
 -- runtime. These aren't really useful for anything, except to gain

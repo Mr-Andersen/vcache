@@ -7,7 +7,6 @@ module Database.VCache.VCacheable
     , module Database.VCache.VPut
     ) where
 
-import Control.Applicative
 import Control.Monad
 
 import Data.Word

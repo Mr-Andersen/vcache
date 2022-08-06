@@ -31,7 +31,6 @@ module Database.VCache.Clean
     ) where
 
 import Control.Monad
-import Control.Applicative
 import Control.Concurrent
 import Data.Bits
 import qualified Data.Traversable as TR

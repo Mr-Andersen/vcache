@@ -41,12 +41,12 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Internal as BSI
 import Control.Monad
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.STM (STM)
+import Control.Monad.STM (STM, throwSTM)
 import Control.Applicative
 import Control.Concurrent.MVar
 import Control.Concurrent.STM.TVar
 import Control.Monad.Trans.State.Strict
-import Control.Exception (bracket)
+import Control.Exception (Exception, bracket)
 import System.Mem.Weak (Weak)
 import System.FileLock (FileLock)
 import Database.LMDB.Raw
@@ -102,7 +102,7 @@ data VRef a = VRef
     , vref_space  :: !VSpace                            -- ^ virtual address space for VRef
     , vref_type   :: !TypeRep                           -- ^ type of value held by VRef
     , vref_parse  :: !(VGet a)                          -- ^ parser for this VRef
-    } deriving (Typeable)
+    }
 instance Eq (VRef a) where (==) = (==) `on` vref_cache
 instance Show (VRef a) where 
     showsPrec _ v = showString "VRef#" . shows (vref_addr v)
@@ -189,7 +189,7 @@ data CacheMode
         | CacheMode1
         | CacheMode2
         | CacheMode3
-        deriving (Eq, Ord, Show)
+        deriving stock (Eq, Ord, Show)
 
 cacheModeBits :: CacheMode -> Word16
 cacheModeBits CacheMode0 = 0
@@ -243,7 +243,7 @@ data PVar a = PVar
     , pvar_space :: !VSpace -- ^ virtual address space for PVar
     , pvar_type  :: !TypeRep
     , pvar_write :: !(a -> VPut ())
-    } deriving (Typeable)
+    }
 instance Eq (PVar a) where (==) = (==) `on` pvar_data
 instance Show (PVar a) where 
     showsPrec _ pv = showString "PVar#" . shows (pvar_addr pv)
@@ -285,7 +285,7 @@ data RDV a = RDV a
 data VCache = VCache
     { vcache_space :: !VSpace -- ^ virtual address space for VCache
     , vcache_path  :: !ByteString
-    } deriving (Eq)
+    } deriving stock (Eq)
 
 -- | VSpace represents the virtual address space used by VCache. Except
 -- for loadRootPVar, most operations use VSpace rather than the VCache.
@@ -341,7 +341,7 @@ data VSpace = VSpace
     --   a channel to talk to that thread
     --   queue of MVars waiting on synchronization/flush.
 
-    } deriving (Typeable)
+    }
 
 instance Eq VSpace where (==) = (==) `on` vcache_signal
 
@@ -452,7 +452,15 @@ withByteStringVal (BSI.PS fp off len) action = withForeignPtr fp $ \ p ->
 -- durable), but durability is optional (see markDurable). 
 -- 
 newtype VTx a = VTx { _vtx :: StateT VTxState STM a }
-    deriving (Monad, Functor, Applicative, Alternative, MonadPlus)
+    deriving newtype (Monad, Functor, Applicative, Alternative, MonadPlus)
+
+newtype VTxException = VTxException String
+    deriving newtype (Show)
+
+instance Exception VTxException
+
+instance MonadFail VTx where
+    fail = liftSTM . throwSTM . VTxException
 
 -- | In addition to the STM transaction, I need to track whether
 -- the transaction is durable (such that developers may choose 
@@ -561,23 +569,18 @@ instance Functor VPut where
         return (VPutR (f r) s')
     {-# INLINE fmap #-}
 instance Applicative VPut where
-    pure = return
+    pure r = VPut (\ s -> return (VPutR r s))
     (<*>) = ap
     {-# INLINE pure #-}
     {-# INLINE (<*>) #-}
 instance Monad VPut where
-    fail msg = VPut (\ _ -> fail ("VCache.VPut.fail " ++ msg))
-    return r = VPut (\ s -> return (VPutR r s))
     m >>= k = VPut $ \ s ->
         _vput m s >>= \ (VPutR r s') ->
         _vput (k r) s'
-    m >> k = VPut $ \ s ->
-        _vput m s >>= \ (VPutR _ s') ->
-        _vput k s'
-    {-# INLINE return #-}
     {-# INLINE (>>=) #-}
-    {-# INLINE (>>) #-}
 
+instance MonadFail VPut where
+    fail msg = VPut (\ _ -> fail ("VCache.VPut.fail " ++ msg))
 
 -- | VGet is a parser combinator monad for VCache. Unlike pure binary
 -- parsers, VGet supports reads from a stack of VRefs and PVars to 
@@ -603,27 +606,20 @@ instance Functor VGet where
             VGetE msg -> VGetE msg 
     {-# INLINE fmap #-}
 instance Applicative VGet where
-    pure = return
+    pure r = VGet (\ s -> return (VGetR r s))
     (<*>) = ap
     {-# INLINE pure #-}
     {-# INLINE (<*>) #-}
 instance Monad VGet where
-    fail msg = VGet (\ _ -> return (VGetE msg))
-    return r = VGet (\ s -> return (VGetR r s))
     m >>= k = VGet $ \ s ->
         _vget m s >>= \ c ->
         case c of
             VGetE msg -> return (VGetE msg)
             VGetR r s' -> _vget (k r) s'
-    m >> k = VGet $ \ s ->
-        _vget m s >>= \ c ->
-        case c of
-            VGetE msg -> return (VGetE msg)
-            VGetR _ s' -> _vget k s'
-    {-# INLINE fail #-}
-    {-# INLINE return #-}
     {-# INLINE (>>=) #-}
-    {-# INLINE (>>) #-}
+instance MonadFail VGet where
+    fail msg = VGet (\ _ -> return (VGetE msg))
+    {-# INLINE fail #-}
 instance Alternative VGet where
     empty = mzero
     (<|>) = mplus

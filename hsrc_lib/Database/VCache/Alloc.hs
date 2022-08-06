@@ -33,7 +33,6 @@ module Database.VCache.Alloc
 
 import Control.Exception
 import Control.Monad
-import Control.Applicative
 import Data.Word
 import Data.IORef
 import Data.ByteString (ByteString)

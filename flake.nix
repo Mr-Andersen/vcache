@@ -19,6 +19,9 @@
             "-Wincomplete-record-updates"
             "-Wmissing-deriving-strategies"
           ];
+          extensions = [
+            "-XDerivingStrategies"
+          ];
           this = ghcVersion:
             let pkgs = nixpkgs'.haskell.packages.${ghcVersion}.override {
                   overrides = (import ./nix/dependencies.nix inputs ghcVersion);
@@ -46,7 +49,7 @@
                 ghci = nixpkgs'.writeScript "ghci"
                   ''
                   set -x
-                  ${ghcWithPackages}/bin/ghci ${unwords options} $(find . -name '*.hs')
+                  ${ghcWithPackages}/bin/ghci ${unwords (options ++ extensions)} $(find . -name '*.hs')
                   '';
              in { inherit vcache ghci; };
 

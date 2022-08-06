@@ -10,7 +10,6 @@ module Database.VCache.VGetAux
     , peekByte
     ) where
 
-import Control.Applicative
 import Data.Word
 import Data.Bits
 import qualified Data.List as L
@@ -94,5 +93,5 @@ consuming n op = VGet $ \ s ->
 "consuming>>consuming"  forall n1 n2 f g . consuming n1 f >> consuming n2 g = consuming (n1+n2) (f>>g)
 "consuming>>=consuming" forall n1 n2 f g . consuming n1 f >>= consuming n2 . g = consuming (n1+n2) (f>>=g)
  #-}
-{-# INLINABLE consuming #-}
+{-# INLINE[0] consuming #-}
 

@@ -13,7 +13,6 @@ module Database.VCache.VPutAux
     , peekChildren
     ) where
 
-import Control.Applicative
 import Data.Bits
 import Data.Word
 import Data.IORef
@@ -29,7 +28,7 @@ reserving n op = reserve n >> op
 {-# RULES
 "reserving >> reserving" forall n1 n2 f g . reserving n1 f >> reserving n2 g = reserving (n1+n2) (f>>g)
  #-}
-{-# INLINABLE reserving #-}
+{-# INLINE[0] reserving #-}
 
 -- | Ensure that at least N bytes are available for storage without
 -- growing the underlying buffer. Use this before unsafePutWord8 

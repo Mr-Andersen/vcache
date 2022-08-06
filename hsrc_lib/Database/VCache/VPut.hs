@@ -22,7 +22,6 @@ module Database.VCache.VPut
     , peekChildCount
     ) where
 
-import Control.Applicative
 import Data.Bits
 import Data.Char
 import Data.Word

@@ -26,8 +26,6 @@ module Database.VCache.VGet
 
     ) where
 
-import Control.Applicative
-
 import Data.Bits
 import Data.Char
 import Data.Word
