@@ -1,8 +1,9 @@
-Name: vcache
-Version: 0.2.6
-Synopsis: semi-transparent persistence for Haskell using LMDB, STM
-Category: Database
-Description:
+cabal-version:      3.0
+name: vcache
+version: 0.2.6
+synopsis: semi-transparent persistence for Haskell using LMDB, STM
+category: Database
+description:
   VCache provides a nearly-transparent persistent memory for Haskell
   supporting ACID transactional variables and large structured values.
   The virtual address space is modeled above a memory mapped file via
@@ -13,31 +14,24 @@ Description:
   Other similar packages include TCache and perdure. See the home page 
   for a simple comparison.
   
-Author: David Barbour
-Maintainer: dmbarbour@gmail.com
-Homepage: http://github.com/dmbarbour/haskell-vcache
+author: David Barbour
+maintainer: dmbarbour@gmail.com
+homepage: http://github.com/dmbarbour/haskell-vcache
 
-Package-Url: 
-Copyright: (c) 2014-2015 by David Barbour
-License: BSD3
+copyright: (c) 2014-2015 by David Barbour
+license: BSD3
 license-file: LICENSE
-Stability: experimental
+stability: experimental
 build-type: Simple
-cabal-version: >= 1.16.0.3
 
-Extra-source-files:
+extra-source-files:
     README.md 
     changelog.md
 
-Source-repository head
-  type: git
-  location: http://github.com/dmbarbour/haskell-vcache.git
-
-
-Library
-  hs-Source-Dirs: hsrc_lib
+library
+  hs-source-dirs: hsrc_lib
   default-language: Haskell2010
-  Build-Depends: base (>= 4.6 && < 5)
+  build-depends: base (>= 4.6 && < 5)
     , direct-murmur-hash
     , bytestring
     , transformers
@@ -48,7 +42,7 @@ Library
     , easy-file
     , random (>= 1.0)
 
-  Exposed-Modules:
+  exposed-modules:
     Database.VCache
     Database.VCache.VRef
     Database.VCache.PVar
@@ -62,7 +56,7 @@ Library
     Database.VCache.Stats
     Database.VCache.Cache
 
-  Other-Modules:
+  other-modules:
     Database.VCache.Types
     Database.VCache.Open
     Database.VCache.Aligned
@@ -80,4 +74,3 @@ Library
     Database.VCache.Refct
    
   ghc-options: -Wall -auto-all
-
